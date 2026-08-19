@@ -45,10 +45,12 @@ let ACTIVITIES = loadActs();
 
 const STORAGE_KEY = "routine-tracker-v1";
 const FIRED_KEY = "routine-fired-v1";
+const REMIND_KEY = "routine-reminder-lead-v1";
 
 let view = new Date();
 let data = load(STORAGE_KEY, {});
 let fired = load(FIRED_KEY, {});
+let reminderLead = Number(localStorage.getItem(REMIND_KEY)) || 15;
 
 const els = {
   thead: document.querySelector("#tracker thead"),
@@ -235,19 +237,20 @@ function notify(title, body) {
 }
 
 function checkReminders() {
+  if (reminderLead === 0) return;
   const now = new Date();
   const mins = now.getHours() * 60 + now.getMinutes();
   const day = ymd(now);
 
   ACTIVITIES.forEach((a) => {
-    const target = reminderMinutes(a);
+    const target = reminderMinutes(a, reminderLead);
     const diff = (mins - target + 24 * 60) % (24 * 60);
     if (diff <= 2) {
       const fid = `${day}:${a.id}`;
       if (fired[fid]) return;
       fired[fid] = true;
       save(FIRED_KEY, fired);
-      notify("Starts in 15 minutes", `${a.name} (${a.time})`);
+      notify(`Starts in ${reminderLead} min`, `${a.name} (${a.time})`);
     }
   });
 }
@@ -261,8 +264,8 @@ function updateNotifyButton() {
     els.notifyBtnSettings.classList.toggle("on", on);
   }
   els.statusText.textContent = on
-    ? "Browser notifications are enabled. Keep this tab open for 15-minute reminders."
-    : "Click Enable reminders and keep this tab open so alerts can fire 15 minutes before each activity.";
+    ? `Browser notifications are enabled. Reminders fire ${reminderLead} min before each activity.`
+    : "Click Enable reminders and keep this tab open so alerts can fire before each activity.";
 }
 
 async function enableNotify() {
@@ -318,6 +321,15 @@ els.settingsModal.addEventListener("click", (e) => {
 });
 els.notifyBtn.addEventListener("click", enableNotify);
 els.notifyBtnSettings.addEventListener("click", enableNotify);
+const leadSelect = document.getElementById("reminderLeadTime");
+leadSelect.value = String(reminderLead);
+leadSelect.addEventListener("change", () => {
+  reminderLead = Number(leadSelect.value);
+  localStorage.setItem(REMIND_KEY, reminderLead);
+  fired = {};
+  save(FIRED_KEY, fired);
+  showToast(reminderLead ? `Reminders set to ${reminderLead} min before` : "Reminders turned off");
+});
 els.statusBar.hidden = false;
 
 const TYPES_KEY = "routine-types-v1";

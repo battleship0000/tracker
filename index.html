@@ -124,6 +124,17 @@
       <p class="hint">Ticks are stored on this device. You can uncheck an open box after refresh. Frozen boxes stay as they were.</p>
       <button type="button" id="openEditBtn" class="btn ghost-wide">Edit timetable</button>
       <button type="button" id="notifyBtnSettings" class="btn primary wide">Enable reminders</button>
+      <div class="reminder-setting">
+        <label for="reminderLeadTime">Remind me before</label>
+        <select id="reminderLeadTime">
+          <option value="0">Off</option>
+          <option value="5">5 minutes</option>
+          <option value="10">10 minutes</option>
+          <option value="15" selected>15 minutes</option>
+          <option value="30">30 minutes</option>
+          <option value="60">1 hour</option>
+        </select>
+      </div>
       <button type="button" id="installBtnSettings" class="btn ghost-wide" hidden>Install app</button>
       <a class="btn ghost-wide ics-dl" href="routine.ics" download="routine.ics">Download calendar reminders</a>
     </div>

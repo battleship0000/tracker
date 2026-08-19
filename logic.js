@@ -33,8 +33,9 @@
     return "open";
   }
 
-  function reminderMinutes(activity) {
-    return (activity.startH * 60 + activity.startM - 15 + 24 * 60) % (24 * 60);
+  function reminderMinutes(activity, leadMinutes) {
+    const lead = typeof leadMinutes === "number" ? leadMinutes : 15;
+    return (activity.startH * 60 + activity.startM - lead + 24 * 60) % (24 * 60);
   }
 
   function escapeHtml(value) {
