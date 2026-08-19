@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f1419" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Routine" />
+  <title>Routine</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="top">
+      <div>
+        <p class="eyebrow">Routine app</p>
+        <h1>Daily Routine</h1>
+        <p class="sub">Tick while a block is on, or within 2 hours after it ends. Then it freezes for the month.</p>
+      </div>
+      <div class="header-actions">
+        <div class="clock" id="clock">--:--:--</div>
+        <div class="date-line" id="todayLabel"></div>
+        <div class="btn-row">
+          <button type="button" id="installBtn" class="btn primary" hidden>Install app</button>
+          <button type="button" id="notifyBtn" class="btn primary">Enable reminders</button>
+        </div>
+      </div>
+    </header>
+
+    <section class="status-bar" id="statusBar" hidden>
+      <span id="statusText"></span>
+    </section>
+
+    <nav class="tabs" role="tablist">
+      <button type="button" class="tab on" data-tab="today">Today</button>
+      <button type="button" class="tab" data-tab="month">Month</button>
+      <button type="button" class="tab" data-tab="edit">Edit</button>
+      <button type="button" class="tab" data-tab="setup">Install & alerts</button>
+    </nav>
+
+    <section id="panel-today" class="panel">
+      <div class="today-head">
+        <h2 class="panel-title">Today’s timetable</h2>
+        <button type="button" id="settingsBtn" class="settings-btn" aria-label="Settings">⚙</button>
+      </div>
+      <div id="todayList" class="today-list"></div>
+    </section>
+
+    <section id="panel-month" class="panel" hidden>
+      <div class="month-nav">
+        <button type="button" id="prevMonth" class="btn ghost" aria-label="Previous month">‹</button>
+        <h2 id="monthTitle"></h2>
+        <button type="button" id="nextMonth" class="btn ghost" aria-label="Next month">›</button>
+      </div>
+      <section class="legend">
+        <span><i class="box empty"></i> Blank / missed</span>
+        <span><i class="box filled"></i> Completed</span>
+        <span><i class="box open-mark"></i> Open to fill</span>
+        <span><i class="box frozen-mark"></i> Frozen</span>
+      </section>
+      <div class="table-wrap">
+        <table id="tracker">
+          <thead></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="panel-edit" class="panel" hidden>
+      <div class="today-head">
+        <h2 class="panel-title">Edit timetable</h2>
+      </div>
+      <p class="sub">Change name, start, and end for any block. End earlier than start means it runs past midnight. Saved timetable is used on Today, Month, and reminders.</p>
+      <div class="type-add">
+        <input type="text" id="newTypeInput" placeholder="New type name" />
+        <button type="button" id="addTypeBtn" class="btn primary">Add type</button>
+      </div>
+      <div id="editorList" class="editor-list"></div>
+      <div class="editor-actions">
+        <button type="button" id="addActivityBtn" class="btn ghost-wide">+ Add activity</button>
+        <button type="button" id="saveTimetableBtn" class="btn primary">Save timetable</button>
+        <button type="button" id="resetTimetableBtn" class="btn ghost-wide">Reset to original</button>
+      </div>
+    </section>
+
+    <section id="panel-setup" class="panel" hidden>
+      <div class="timetable-card phone-card">
+        <h3>Install this as an app</h3>
+        <p class="hint">Add it to your phone home screen. Tracking works offline. Checkboxes stay on that phone.</p>
+        <ol class="steps">
+          <li><strong>Android (Chrome):</strong> tap the menu → <em>Install app</em> / <em>Add to Home screen</em>, or use the Install app button above.</li>
+          <li><strong>iPhone (Safari):</strong> Share → <em>Add to Home Screen</em>.</li>
+        </ol>
+      </div>
+      <div class="timetable-card phone-card">
+        <h3>Phone reminders when the phone is locked</h3>
+        <p class="hint">Install does not replace calendar alerts. Import this file once so your phone notifies you 15 minutes before each block even if the app is closed.</p>
+        <p><a class="btn primary ics-dl" href="routine.ics" download="routine.ics">Download calendar file</a></p>
+        <ol class="steps">
+          <li><strong>Android:</strong> open <code>routine.ics</code> → Google Calendar → import. Allow Calendar notifications.</li>
+          <li><strong>iPhone:</strong> open the file → Add All.</li>
+        </ol>
+      </div>
+      <div class="timetable-card">
+        <h3>Daily timetable</h3>
+        <p class="hint">Tick an open block. Same save and 2-hour freeze as Today.</p>
+        <div id="timetableList" class="tt-grid"></div>
+      </div>
+    </section>
+  </div>
+
+  <button type="button" id="saveBtn" class="save-fab">Save</button>
+
+  <div id="settingsModal" class="modal" hidden>
+    <div class="modal-card">
+      <div class="modal-top">
+        <h3>Settings</h3>
+        <button type="button" id="closeSettings" class="btn ghost" aria-label="Close">×</button>
+      </div>
+      <p class="hint">Ticks are stored on this device. You can uncheck an open box after refresh. Frozen boxes stay as they were.</p>
+      <button type="button" id="openEditBtn" class="btn ghost-wide">Edit timetable</button>
+      <button type="button" id="notifyBtnSettings" class="btn primary wide">Enable reminders</button>
+      <button type="button" id="installBtnSettings" class="btn ghost-wide" hidden>Install app</button>
+      <a class="btn ghost-wide ics-dl" href="routine.ics" download="routine.ics">Download calendar reminders</a>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" hidden></div>
+  <script src="logic.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
