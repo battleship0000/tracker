@@ -240,7 +240,9 @@ function checkReminders() {
   const day = ymd(now);
 
   ACTIVITIES.forEach((a) => {
-    if (mins === reminderMinutes(a)) {
+    const target = reminderMinutes(a);
+    const diff = (mins - target + 24 * 60) % (24 * 60);
+    if (diff <= 2) {
       const fid = `${day}:${a.id}`;
       if (fired[fid]) return;
       fired[fid] = true;
@@ -484,3 +486,6 @@ setInterval(() => {
   checkReminders();
 }, 1000);
 setInterval(render, 30000);
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) { checkReminders(); render(); }
+});
