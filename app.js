@@ -51,6 +51,8 @@ let view = new Date();
 let data = load(STORAGE_KEY, {});
 let fired = load(FIRED_KEY, {});
 let reminderLead = Number(localStorage.getItem(REMIND_KEY)) || 15;
+const CUSTOM_REMIND_KEY = "routine-custom-reminders-v1";
+let customReminders = load(CUSTOM_REMIND_KEY, []);
 
 const els = {
   thead: document.querySelector("#tracker thead"),
@@ -237,20 +239,33 @@ function notify(title, body) {
 }
 
 function checkReminders() {
-  if (reminderLead === 0) return;
   const now = new Date();
   const mins = now.getHours() * 60 + now.getMinutes();
   const day = ymd(now);
 
-  ACTIVITIES.forEach((a) => {
-    const target = reminderMinutes(a, reminderLead);
+  if (reminderLead !== 0) {
+    ACTIVITIES.forEach((a) => {
+      const target = reminderMinutes(a, reminderLead);
+      const diff = (mins - target + 24 * 60) % (24 * 60);
+      if (diff <= 2) {
+        const fid = `${day}:${a.id}`;
+        if (fired[fid]) return;
+        fired[fid] = true;
+        save(FIRED_KEY, fired);
+        notify(`Starts in ${reminderLead} min`, `${a.name} (${a.time})`);
+      }
+    });
+  }
+
+  customReminders.forEach((r) => {
+    const target = r.h * 60 + r.m;
     const diff = (mins - target + 24 * 60) % (24 * 60);
     if (diff <= 2) {
-      const fid = `${day}:${a.id}`;
+      const fid = `${day}:cr-${r.time}-${r.label}`;
       if (fired[fid]) return;
       fired[fid] = true;
       save(FIRED_KEY, fired);
-      notify(`Starts in ${reminderLead} min`, `${a.name} (${a.time})`);
+      notify(r.label, `Reminder at ${r.time}`);
     }
   });
 }
@@ -331,6 +346,45 @@ leadSelect.addEventListener("change", () => {
   showToast(reminderLead ? `Reminders set to ${reminderLead} min before` : "Reminders turned off");
 });
 els.statusBar.hidden = false;
+
+/* ── Custom Reminders ── */
+const crTime = document.getElementById("crTime");
+const crLabel = document.getElementById("crLabel");
+const crAddBtn = document.getElementById("crAddBtn");
+const crList = document.getElementById("crList");
+
+function renderCustomReminders() {
+  crList.innerHTML = "";
+  customReminders.forEach((r, i) => {
+    const li = document.createElement("li");
+    li.innerHTML = `<span><span class="cr-time">${escapeHtml(r.time)}</span>${escapeHtml(r.label)}</span>
+      <button class="cr-del" data-idx="${i}" title="Delete">✕</button>`;
+    crList.appendChild(li);
+  });
+}
+
+crAddBtn.addEventListener("click", () => {
+  const time = crTime.value;
+  const label = crLabel.value.trim() || "Reminder";
+  if (!time) { showToast("Pick a time first"); return; }
+  customReminders.push({ time, label, h: Number(time.split(":")[0]), m: Number(time.split(":")[1]) });
+  save(CUSTOM_REMIND_KEY, customReminders);
+  crTime.value = "";
+  crLabel.value = "";
+  renderCustomReminders();
+  showToast(`Reminder set for ${time}`);
+});
+
+crList.addEventListener("click", (e) => {
+  const btn = e.target.closest(".cr-del");
+  if (!btn) return;
+  customReminders.splice(Number(btn.dataset.idx), 1);
+  save(CUSTOM_REMIND_KEY, customReminders);
+  renderCustomReminders();
+  showToast("Reminder deleted");
+});
+
+renderCustomReminders();
 
 const TYPES_KEY = "routine-types-v1";
 const BASE_KINDS = ["sleep", "meal", "study", "free", "job", "exercise", "walk"];

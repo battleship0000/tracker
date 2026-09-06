@@ -135,6 +135,15 @@
           <option value="60">1 hour</option>
         </select>
       </div>
+      <div class="custom-reminders">
+        <h4>Custom reminders</h4>
+        <div class="cr-add">
+          <input type="time" id="crTime" />
+          <input type="text" id="crLabel" placeholder="Label (e.g. Drink water)" maxlength="60" />
+          <button type="button" id="crAddBtn" class="btn primary">Add</button>
+        </div>
+        <ul id="crList" class="cr-list"></ul>
+      </div>
       <button type="button" id="installBtnSettings" class="btn ghost-wide" hidden>Install app</button>
       <a class="btn ghost-wide ics-dl" href="routine.ics" download="routine.ics">Download calendar reminders</a>
     </div>
