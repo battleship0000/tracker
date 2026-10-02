@@ -4,6 +4,7 @@
   "private": true,
   "description": "A privacy-first, installable daily routine tracker.",
   "scripts": {
+    "dev": "npx serve . -l 3000",
     "test": "node tests/logic.test.js",
     "check": "node --check app.js && node --check logic.js && node --check sw.js"
   }
